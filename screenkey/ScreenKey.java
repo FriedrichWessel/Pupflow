@@ -9,7 +9,7 @@ public class ScreenKey extends JFrame {
 	Robot r = null;
 	public ScreenKey() {
 		k.setKey(Color.GREEN);
-		k.setMaxDistance(90.0f);
+		k.setMaxDistance(160.0f);
 		try {
 			r = new Robot();
 		} catch(Exception e){

@@ -4,7 +4,7 @@ import java.awt.image.*;
 public class Keyer {
 	private Color key;
 	private float maxdistance;
-	private final int[] KEYED = new int[]{0,0,0}, UNKEYED = new int[]{255,255,255};
+	private final int[] KEYED = new int[]{255,255,255}, UNKEYED = new int[]{0,0,0};
 
 	public Keyer()	{
 		key = Color.BLACK;
@@ -66,10 +66,10 @@ public class Keyer {
 			for(int x = 0; x < i.getWidth(); x++) {
 				maskr.getPixel(x, y, buf);
 				if(buf[0] == 0) {
-					baser.getPixel(x, y, buf);
+					layerr.getPixel(x, y, buf);
 					r.setPixel(x, y, buf);
 				} else {
-					layerr.getPixel(x, y, buf);
+					baser.getPixel(x, y, buf);
 					r.setPixel(x, y, buf);
 				}
 			}

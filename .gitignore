@@ -3,3 +3,5 @@ pkg
 *.blend1
 *.blend2
 .DS_STORE
+*~
+*__pycache__*

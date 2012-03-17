@@ -2,6 +2,6 @@ bin
 pkg
 *.blend1
 *.blend2
-.DS_STORE
+.DS_Store
 *~
 *__pycache__*

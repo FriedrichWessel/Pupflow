@@ -1,0 +1,157 @@
+<html>
+<head>
+	<style>
+		table, input, select {
+			width: 100%;
+		}
+		#template {
+			display: none;
+		}
+	</style>
+</head>
+<body>
+	<table border=1>
+		<thead>
+			<tr>
+				<th>ID</th>
+				<th>Object Name</th>
+				<th>Min Value</th>
+				<th>Mid Value</th>
+				<th>Max Value</th>
+				<th>Axis</th>
+				<th>Translation/Rotation</th>
+			</tr>
+		</thead>
+		<tbody>
+			<tr id="template">
+				<td><input/></td>
+				<td><input/></td>
+				<td><input/></td>
+				<td><input/></td>
+				<td><input/></td>
+				<td><select>
+					<option>x</option>
+					<option>y</option>
+					<option>z</option>
+				</select></td>
+				<td><select>
+					<option>Translation</option>
+					<option>Rotation</option>
+				</select></td>
+			</tr>
+		</tbody>
+	</table>
+	<button id="add">+</button>
+	<button id="upload">Upload</button>
+	<button id="refresh">Refresh</button>
+<script src="jquery.min.js"></script>
+<script src="underscore-min.js"></script>
+<script>
+	var ID = 0;
+	var NAME = 1;
+	var VAL_MIN = 2;
+	var VAL_MID = 3;
+	var VAL_MAX = 4;
+	var AXIS = 5;
+	var ROTATION = 6;
+	function set_input_value(elem, val) {
+		$($(elem).find("input")).val(val);
+	}
+
+	function get_input_value(elem, val) {
+		return $($(elem).find("input")).val();
+	}
+
+	function elem_to_row(val, key) {
+		var $row = $("#template").clone().attr('id', 'nottemplate');
+		var $tds = $row.find("td");
+		set_input_value($tds.get(ID), key);
+		set_input_value($tds.get(NAME), val.Name);
+		set_input_value($tds.get(VAL_MIN), val.ValueMap[0]);
+		set_input_value($tds.get(VAL_MID), val.Midpoint);
+		set_input_value($tds.get(VAL_MAX), val.ValueMap[1]);
+		var elem = $($tds.get(AXIS)).find("select").get(0);
+		switch(val.Axis) {
+			case "x":
+				elem.selectedIndex = 0;
+				break;
+			case "y":
+				elem.selectedIndex = 1;
+				break;
+			case "z":
+				elem.selectedIndex = 2;
+				break;
+		}
+		var elem = $($tds.get(ROTATION)).find("select").get(0);
+		elem.selectedIndex = 0;
+		if(val.Rotation) {
+			elem.selectedIndex = 1;
+		}
+		return $row
+	}
+
+	function row_to_data(elem) {
+		var $tds = $($(elem).find("td"));
+		var data = {
+			ID: 0,
+			Object: {
+				Name: "",
+				ValueMap: [0, 0],
+				Axis: "x",
+				Rotation: false,
+			},
+		};
+		var id = get_input_value($tds.get(ID));
+		if(id == "") {
+			return null;
+		}
+		data["ID"] = parseInt(id);
+		data["Object"]["Name"] = get_input_value($tds.get(NAME));
+		data["Object"]["ValueMap"][0] = parseFloat(get_input_value($tds.get(VAL_MIN)));
+		data["Object"]["Midpoint"] = parseFloat(get_input_value($tds.get(VAL_MID)));
+		data["Object"]["ValueMap"][1] = parseFloat(get_input_value($tds.get(VAL_MAX)));
+		switch($($tds.get(AXIS)).find("select").get(0).selectedIndex) {
+			case 0:
+				data["Object"]["Axis"] = "x";
+				break;
+			case 1:
+				data["Object"]["Axis"] = "y";
+				break;
+			case 2:
+				data["Object"]["Axis"] = "z";
+				break;
+		}
+		data["Object"]["Rotation"] = ($($tds.get(ROTATION)).find("select").get(0).selectedIndex==1);
+		return data;
+	}
+
+	function load_config() {
+		$("table > tbody > tr:not(#template)").remove();
+		$.getJSON("/axis", function(data) {
+			_.each(data, function(val, key) {
+				$(elem_to_row(val, key)).appendTo($("table"));
+			})
+		});
+	}
+
+	function add_row() {
+		var $row = $("#template").clone().attr('id', 'nottemplate');
+		$row.appendTo($("table"));
+	}
+
+	function send() {
+		$("table tbody tr:not(#template)").each(function(id, elem) {
+			data = row_to_data(elem);
+			if(data != null) {
+				$.post("/axis", JSON.stringify(data));
+			}
+		});
+	}
+
+	load_config();
+	$("#refresh").click(load_config);
+	$("#add").click(add_row);
+	$("#upload").click(send);
+</script>
+</body>
+</html>
